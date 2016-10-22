@@ -1,0 +1,13 @@
+valid_item_check 080D745C 1
+check_TM_compatibility2 0806E00C 2
+check_TM_compatibility 0806E064 2
+get_TM_move 081B6CFC 1
+get_tutor_move 081B2360 1
+is_move_a_HM 081B6D14 1
+bag_buffer_item 081AB39C 3
+get_pokemove_compatibility 081B22D8 3
+update_bag_ptrs 080D65F0 0
+fix_TM_swapping 080D6FD8 1
+get_ptrs_for_bag_strings 081AB218 0
+TM_field 080FDF48 1
+delete_tm_after_use 081B6EE0 0
