@@ -3,7 +3,9 @@
 import shutil
 import os
 
-NEW_ITEMS = 224 + 378 #X is how many new items you want to add
+#Lines to edit by an user
+##############################
+NEW_ITEMS = X + 378 #X is how many new items you want to add
 TMS_NO = 100 #Number of all TMs
 HMS_NO = 8 #Number of all HMs
 POKE_NUM = 412 #Number of Pokemon present in your game
@@ -19,6 +21,7 @@ ITEM_POCKET_MAX = 30 #Max number of items in pocket items
 KEY_POCKET_MAX = 30 #Max number of items in pocket key items
 BALL_POCKET_MAX = 16 #Max number of items in pocket balls
 BERRY_POCKET_MAX = 46 #Max number of items in pocket berries
+##############################
 
 def align_offset(offset):
 	while (offset % 4) != 0:
