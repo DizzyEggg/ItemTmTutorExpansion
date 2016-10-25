@@ -61,6 +61,18 @@ def save_table_ptrs(name, offset, clear):
 	if clear == 1:
 		ini.seek(0x0)
 		ini.truncate()
+		ini.write("ItemsNo: ")
+		ini.write(str(NEW_ITEMS))
+		ini.write("\n")
+		ini.write("TMsNo: ")
+		ini.write(str(TMS_NO))
+		ini.write("\n")
+		ini.write("HMsNo: ")
+		ini.write(str(HMS_NO))
+		ini.write("\n")
+		ini.write("TutorMoves: ")
+		ini.write(str(TUTOR_MOVES_NO))
+		ini.write("\n")
 	else:
 		ini.write(name)
 		ini.write(": ")
