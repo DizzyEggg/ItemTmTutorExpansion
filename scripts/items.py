@@ -29,21 +29,19 @@ def align_offset(offset):
 	return offset
 
 def find_offset_to_put(rom, needed_bytes, start_loc):
-	offset = start_loc
+	offset = align_offset(start_loc)
+	rom.seek(0, 2)
+	max_pos = rom.tell()
 	found_bytes = 0
-	while (found_bytes < needed_bytes):
-		for i in range (0, needed_bytes):
-			rom.seek(offset + i)
-			byte = rom.read(1)
-			if (byte):
-				if (byte != b'\xFF'):
-					offset += i + 1
-					align_offset(offset)
-					found_bytes = 0
-					break
-				found_bytes += 1
-			else:
-				return 0
+	while found_bytes < needed_bytes:
+		if offset + found_bytes >= max_pos:
+			print("End of file reached. ")
+			return 0
+		found_bytes += 1
+		rom.seek(offset + found_bytes)
+		if rom.read(1) != b'\xFF':
+			offset = align_offset(offset + found_bytes)
+			found_bytes = 0
 	return offset
 
 def get_pointer(rom, loc):
@@ -122,6 +120,7 @@ def write_new_tm_data(rom, offset, num):
 	
 def expand_items(rom, offset):
 	#first goes the item table
+	print("Expanding item table")
 	sizeof = 0x2C
 	offset = repoint_table(rom, get_pointer(rom, 0x0001C8), 377 * sizeof, offset, "item_table")
 	#append the bag arrow entry
@@ -131,6 +130,7 @@ def expand_items(rom, offset):
 	rom.seek(offset)
 	#expand TMs
 	if TM_EXPANSION == True:
+		print("Expanding TMs")
 		#move TM Data to a new place in the table
 		old_tm_data_ptr = get_pointer(rom, 0x0001C8) + sizeof * 0x121
 		rom.seek(old_tm_data_ptr)
@@ -242,43 +242,39 @@ def replace_word(file, to_search, replacement):
 	file.seek(0x0)
 	file.write(copy)
 		
-def build_insert_code(offset, only_build):
-	if only_build == True:
-		linker = open("linker.ld", 'r+')
-		replace_word(linker, '+', hex(offset) + "),")
-		linker.close()
-		c_define = open("src//defines.h", 'r+')
-		replace_word(c_define, "ALL_ITEMS", str(NEW_ITEMS))
-		replace_word(c_define, "ALL_POKES", str(POKE_NUM))
-		replace_word(c_define, "expanded_bag_items_ptr", str(EXPANDED_BAG_OFFSET))
-		replace_word(c_define, "BALL_POCKET_MAX_NEW", str(BALL_POCKET_MAX))
-		replace_word(c_define, "ITEM_POCKET_MAX_NEW", str(ITEM_POCKET_MAX))
-		replace_word(c_define, "KEY_POCKET_MAX_NEW", str(KEY_POCKET_MAX))
-		replace_word(c_define, "BERRY_POCKET_MAX_NEW", str(BERRY_POCKET_MAX))
-		if TM_EXPANSION == True:
-			replace_word(c_define, "ALL_TMS", str(TMS_NO))
-			replace_word(c_define, "ALL_HMS", str(HMS_NO))
-			replace_word(c_define, "FIRST_TM_INDEX", str(378))
-		else:
-			replace_word(c_define, "ALL_TMS", str(50))
-			replace_word(c_define, "ALL_HMS", str(8))
-			replace_word(c_define, "FIRST_TM_INDEX", str(289))
-		if MOVETUTOR_EXPANSION == True:
-			replace_word(c_define, "TUTOR_MOVES", str(TUTOR_MOVES_NO))
-		else:
-			replace_word(c_define, "TUTOR_MOVES", str(32))
-		c_define.close()
-		asm_define = open("src//asm_code.s", 'r+')
-		replace_word(asm_define, "INFINITE_TMS,", str(INFINITE_TMS))
-		asm_define.close()
-		os.system("python scripts//build")
-		return
+def build_insert_code(offset):
+	linker = open("linker.ld", 'r+')
+	replace_word(linker, '+', hex(offset) + "),")
+	linker.close()
+	c_define = open("src//defines.h", 'r+')
+	replace_word(c_define, "ALL_ITEMS", str(NEW_ITEMS))
+	replace_word(c_define, "ALL_POKES", str(POKE_NUM))
+	replace_word(c_define, "expanded_bag_items_ptr", str(EXPANDED_BAG_OFFSET))
+	replace_word(c_define, "BALL_POCKET_MAX_NEW", str(BALL_POCKET_MAX))
+	replace_word(c_define, "ITEM_POCKET_MAX_NEW", str(ITEM_POCKET_MAX))
+	replace_word(c_define, "KEY_POCKET_MAX_NEW", str(KEY_POCKET_MAX))
+	replace_word(c_define, "BERRY_POCKET_MAX_NEW", str(BERRY_POCKET_MAX))
+	if TM_EXPANSION == True:
+		replace_word(c_define, "ALL_TMS", str(TMS_NO))
+		replace_word(c_define, "ALL_HMS", str(HMS_NO))
+		replace_word(c_define, "FIRST_TM_INDEX", str(378))
 	else:
-		insert = open("scripts//insert", 'r+')
-		replace_word(insert, "at',", "default=" + hex(offset) + ')')
-		insert.close()
-		os.system("python scripts//insert --debug>function_offsets.ini")
-		return
+		replace_word(c_define, "ALL_TMS", str(50))
+		replace_word(c_define, "ALL_HMS", str(8))
+		replace_word(c_define, "FIRST_TM_INDEX", str(289))
+	if MOVETUTOR_EXPANSION == True:
+		replace_word(c_define, "TUTOR_MOVES", str(TUTOR_MOVES_NO))
+	else:
+		replace_word(c_define, "TUTOR_MOVES", str(32))
+	c_define.close()
+	asm_define = open("src//asm_code.s", 'r+')
+	replace_word(asm_define, "INFINITE_TMS,", str(INFINITE_TMS))
+	asm_define.close()
+	os.system("python scripts//build")
+	insert = open("scripts//insert", 'r+')
+	replace_word(insert, "INSERT_LOC", "=" + hex(offset))
+	insert.close()
+	os.system("python scripts//insert")
 
 def expand_tutors(rom, offset):
 	#Tutor Compatibility
@@ -314,10 +310,9 @@ with open("test.gba", 'rb+') as rom:
 			offset = expand_tutors(rom, offset)
 		bytechanges(rom)
 		if BUILD_CODE == True:
-			build_insert_code(offset, True)
-			offset = find_offset_to_put(rom, os.stat("build//output.bin").st_size, align_offset(offset))
+			offset = find_offset_to_put(rom, 0xA00, offset)
 			if offset == 0:
-				print("Not enough free space to insert code")
+				print("Not enough free space to insert code.")
 			else:
-				build_insert_code(offset, False)
+				build_insert_code(offset)
 	rom.close()
