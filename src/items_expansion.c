@@ -207,6 +207,6 @@ void update_bag_ptrs()
 
 void get_ptrs_for_bag_strings()
 {
-    bag_info.pocket_strings_ptr1 = malloc((TM_POCKET_MAX_NEW + 1) * 8);
-    bag_info.pocket_strings_ptr2 = malloc((TM_POCKET_MAX_NEW + 1) * 24);
+    bag_info.pocket_strings_ptr1 = malloc((BALL_POCKET_MAX_NEW + ITEM_POCKET_MAX_NEW + KEY_POCKET_MAX_NEW + TM_POCKET_MAX_NEW + BERRY_POCKET_MAX_NEW) * 4);
+    bag_info.pocket_strings_ptr2 = malloc((BALL_POCKET_MAX_NEW + ITEM_POCKET_MAX_NEW + KEY_POCKET_MAX_NEW + TM_POCKET_MAX_NEW + BERRY_POCKET_MAX_NEW) * 9);
 }
