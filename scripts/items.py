@@ -188,6 +188,14 @@ def expand_items(rom, offset):
 		rom.write(tm_imgs)
 		for i in range(0, TMS_NO - 50):
 			rom.write((0xF85CDB08F45DDB08).to_bytes(sizeof, byteorder = 'big'))
+		#do the same with HMs
+		rom.seek(get_pointer(rom, 0x1B0034) + sizeof * 0x153)
+		if HMS_NO < 8:
+			hm_imgs = rom.read(sizeof * HMS_NO)
+		else:
+			hm_imgs = rom.read(sizeof * 8)
+		rom.seek(get_pointer(rom, 0x1B0034) + sizeof * (378 + TMS_NO))
+		rom.write(hm_imgs)
 	
 	return offset
 
