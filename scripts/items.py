@@ -207,7 +207,6 @@ def expand_comp_table(rom, offset, sizeof_old, sizeof_new, ptr, name):
 		old_ptr = table_ptr + i * sizeof_old
 		rom.seek(old_ptr)
 		copy = rom.read(sizeof_old)
-		clear_space(rom, old_ptr, sizeof_old)
 		rom.seek(offset)
 		rom.write(copy)
 		rom.write((0x0).to_bytes(sizeof_new - sizeof_old, byteorder = 'little'))
